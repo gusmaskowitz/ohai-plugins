@@ -107,10 +107,9 @@ Ohai.plugin(:Apache2) do
 
       case apache2[:mpm]
       when "prefork"
-        command = "grep -A8 -i mpm_prefork_module #{apache2[:config_file]}|grep MaxClients"
+	command = ("awk '/\\<IfModule mpm_prefork_module\\>/,/<\\/IfModule/ {/^[\\t ]*MaxClients/ && m=\$2} END {printf m}' #{apache2[:config_file]}")
         so = shell_out(command)
-        max_clients = so.stdout.strip
-        max_clients = (max_clients.split)[1].to_i
+        max_clients = so.stdout.to_i
         if max_clients > 0
           apache2[:max_clients] = max_clients
         end
